@@ -21,7 +21,7 @@ class OrderController extends BaseController
         return $behaviors;
     }
 
-    public function actionGetInfo($externalId)
+    public function actionGetInfo($externalId): array
     {
         return [
             'externalId' => '',
@@ -32,7 +32,7 @@ class OrderController extends BaseController
         ];
     }
 
-    public function actionCreate()
+    public function actionCreate(): array
     {
         return [
             'external_id' => ''

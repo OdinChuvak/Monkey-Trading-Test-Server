@@ -21,7 +21,7 @@ class QuoteBoardController extends BaseController
         return $behaviors;
     }
 
-    public function actionIndex()
+    public function actionIndex(): array
     {
         return [
             [

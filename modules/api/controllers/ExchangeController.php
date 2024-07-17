@@ -22,7 +22,7 @@ class ExchangeController extends BaseController
         return $behaviors;
     }
 
-    public function actionGetPairs()
+    public function actionGetPairs(): array
     {
         return [
             [
@@ -32,7 +32,7 @@ class ExchangeController extends BaseController
         ];
     }
 
-    public function actionGetPairConfigurations()
+    public function actionGetPairConfigurations(): array
     {
         return [
             [
