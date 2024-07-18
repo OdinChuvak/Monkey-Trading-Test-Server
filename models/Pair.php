@@ -3,22 +3,22 @@
 namespace app\models;
 
 /**
- * This is the model class for table "rates".
+ * This is the model class for table "pairs".
  *
  * @property int $id
- * @property int $pair_id
- * @property float|null $rate
+ * @property string|null $base_currency
+ * @property string|null $quoted_currency
  * @property int|null $created_at
  * @property int|null $updated_at
  */
-class Rate extends BaseModel
+class Pair extends BaseModel
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName(): string
     {
-        return RATES_TABLE;
+        return 'pairs';
     }
 
     /**
@@ -27,8 +27,8 @@ class Rate extends BaseModel
     public function rules(): array
     {
         return [
-            [['rate'], 'number'],
-            [['pair_id', 'created_at', 'updated_at'], 'integer'],
+            [['created_at', 'updated_at'], 'integer'],
+            [['base_currency', 'quoted_currency'], 'string', 'max' => 8],
         ];
     }
 
@@ -39,8 +39,8 @@ class Rate extends BaseModel
     {
         return [
             'id' => 'ID',
-            'pair_id' => 'ID криптовалютной пары',
-            'rate' => 'Курс',
+            'base_currency' => 'Базовая криптовалюта',
+            'quoted_currency' => 'Котируемая криптовалюта',
             'created_at' => 'Создано',
             'updated_at' => 'Изменено',
         ];
