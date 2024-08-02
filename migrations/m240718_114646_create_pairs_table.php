@@ -3,7 +3,7 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%pairs}}`.
+ * Handles the creation of table `{{%pair}}`.
  */
 class m240718_114646_create_pairs_table extends Migration
 {
@@ -12,7 +12,7 @@ class m240718_114646_create_pairs_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%' . PAIRS_TABLE . '}}', [
+        $this->createTable('{{%' . PAIR_TABLE . '}}', [
             'id' => $this->primaryKey(),
             'base_currency' => $this->string('8'),
             'quoted_currency' => $this->string('8'),

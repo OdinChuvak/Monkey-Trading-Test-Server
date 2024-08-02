@@ -18,7 +18,7 @@ class Rate extends BaseModel
      */
     public static function tableName(): string
     {
-        return RATES_TABLE;
+        return RATE_TABLE;
     }
 
     /**

@@ -18,7 +18,7 @@ class Pair extends BaseModel
      */
     public static function tableName(): string
     {
-        return PAIRS_TABLE;
+        return PAIR_TABLE;
     }
 
     /**

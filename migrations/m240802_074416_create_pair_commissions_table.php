@@ -3,19 +3,20 @@
 use yii\db\Migration;
 
 /**
- * Handles the creation of table `{{%rate}}`.
+ * Handles the creation of table `{{%pair_commission}}`.
  */
-class m240717_150313_create_rates_table extends Migration
+class m240802_074416_create_pair_commissions_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp()
     {
-        $this->createTable('{{%' . RATE_TABLE . '}}', [
+        $this->createTable('{{%' . PAIR_COMMISSION_TABLE . '}}', [
             'id' => $this->primaryKey(),
             'pair_id' => $this->integer(),
-            'rate' => $this->float(10),
+            'buy_commission' => $this->float('8'),
+            'sell_commission' => $this->float('8'),
             'created_at' => $this->integer(),
             'updated_at' => $this->integer(),
         ]);
@@ -26,6 +27,6 @@ class m240717_150313_create_rates_table extends Migration
      */
     public function safeDown()
     {
-        $this->dropTable('{{%' . RATES_TABLE . '}}');
+        $this->dropTable('{{%' . PAIR_COMMISSION_TABLE . '}}');
     }
 }
