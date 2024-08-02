@@ -38,7 +38,7 @@ class ExchangeController extends BaseController
         }, Pair::find()->all());
     }
 
-    public function actionGetPairConfigurations(): array
+    public function actionGetConfigurations(): array
     {
         $configurations = PairConfiguration::find()
             ->with('pair')
@@ -66,9 +66,17 @@ class ExchangeController extends BaseController
 
     public function actionGetCommissions(): array
     {
-        $commissions = PairCommission::find()
-            ->with('pair')
-            ->all();
+        $symbols = \Yii::$app->request->getQueryParam('symbols');
+
+        $query = PairCommission::find()
+            ->joinWith('pair');
+
+        if (!empty($symbols)) {
+            $query = $query
+                ->where(["CONCAT(`pair`.`base_currency`, `pair`.`quoted_currency`)" => $symbols]);
+        }
+
+        $commissions = $query->all();
 
         return array_map(function($commission) {
 
