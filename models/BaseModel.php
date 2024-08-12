@@ -21,6 +21,9 @@ abstract class BaseModel extends ActiveRecord
         ];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function add(array $values, string $formName = ''): ActiveRecord
     {
         $model = new static();
