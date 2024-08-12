@@ -49,7 +49,7 @@ class PairConfiguration extends BaseModel
     {
         return [
             'id' => 'ID',
-            'pair_id' => 'ID валютной пары',
+            'pair_id' => 'ID криптовалютной пары',
             'min_price' => 'Минимальная цена',
             'max_price' => 'Максимальная цена',
             'price_step' => 'Шаг цены',

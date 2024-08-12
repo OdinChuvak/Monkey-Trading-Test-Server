@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use yii\db\ActiveQuery;
+
 /**
  * This is the model class for table "pairs".
  *
@@ -10,6 +12,8 @@ namespace app\models;
  * @property string|null $quoted_currency
  * @property int|null $created_at
  * @property int|null $updated_at
+ * @property PairCommission $commission
+ * @property PairConfiguration $configuration
  */
 class Pair extends BaseModel
 {
@@ -44,5 +48,15 @@ class Pair extends BaseModel
             'created_at' => 'Создано',
             'updated_at' => 'Изменено',
         ];
+    }
+
+    public function getCommission(): ActiveQuery
+    {
+        return $this->hasOne(PairCommission::tableName(), ['pair_id' => 'id']);
+    }
+
+    public function getConfiguration(): ActiveQuery
+    {
+        return $this->hasOne(PairConfiguration::tableName(), ['pair_id' => 'id']);
     }
 }

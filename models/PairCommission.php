@@ -43,7 +43,7 @@ class PairCommission extends BaseModel
     {
         return [
             'id' => 'ID',
-            'pair_id' => 'ID Валютной пары',
+            'pair_id' => 'ID криптовалютной пары',
             'buy_commission' => 'Комиссия за покупку',
             'sell_commission' => 'Комиссия за продажу',
             'created_at' => 'Создано',

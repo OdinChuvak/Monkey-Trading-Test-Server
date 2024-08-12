@@ -7,6 +7,7 @@ namespace app\models;
  *
  * @property int $id
  * @property int $pair_id
+ * @property int $moment_id
  * @property float|null $rate
  * @property int|null $created_at
  * @property int|null $updated_at
@@ -40,9 +41,21 @@ class Rate extends BaseModel
         return [
             'id' => 'ID',
             'pair_id' => 'ID криптовалютной пары',
+            'moment_id' => 'ID момента',
             'rate' => 'Курс',
             'created_at' => 'Создано',
             'updated_at' => 'Изменено',
+        ];
+    }
+
+    public static function batchInsertAttributes(): array
+    {
+        return [
+            'pair_id',
+            'moment_id',
+            'rate',
+            'created_at',
+            'updated_at',
         ];
     }
 }
