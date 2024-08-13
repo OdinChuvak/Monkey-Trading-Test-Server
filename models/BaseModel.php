@@ -31,6 +31,10 @@ abstract class BaseModel extends ActiveRecord
         $model->load($values, $formName);
         $model->save();
 
+        if (count($model->errors) === 0) {
+            $model->refresh();
+        }
+
         return $model;
     }
 

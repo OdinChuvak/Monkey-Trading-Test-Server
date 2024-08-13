@@ -52,11 +52,11 @@ class Pair extends BaseModel
 
     public function getCommission(): ActiveQuery
     {
-        return $this->hasOne(PairCommission::tableName(), ['pair_id' => 'id']);
+        return $this->hasOne(PairCommission::class, ['pair_id' => 'id']);
     }
 
     public function getConfiguration(): ActiveQuery
     {
-        return $this->hasOne(PairConfiguration::tableName(), ['pair_id' => 'id']);
+        return $this->hasOne(PairConfiguration::class, ['pair_id' => 'id']);
     }
 }

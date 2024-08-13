@@ -1,6 +1,6 @@
 <?php
 
-namespace enums;
+namespace app\enums;
 
 class ApiErrorCode
 {
@@ -9,6 +9,11 @@ class ApiErrorCode
     const BAD_REQUEST = [
         'code' => 1000,
         'message' => 'Некорректный запрос'
+    ];
+
+    const MISSING_REQUIRED_DATA = [
+        'code' => 1001,
+        'message' => 'Отсутствуют обязательные данные'
     ];
 
     const INSUFFICIENT_FUND = [

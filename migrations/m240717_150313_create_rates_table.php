@@ -7,6 +7,9 @@ use yii\db\Migration;
  */
 class m240717_150313_create_rates_table extends Migration
 {
+    const INDEX_NAME = 'idx_moment_id';
+    const INDEX_FIELD = 'moment_id';
+
     /**
      * {@inheritdoc}
      */
@@ -20,6 +23,10 @@ class m240717_150313_create_rates_table extends Migration
             'created_at' => $this->integer(),
             'updated_at' => $this->integer(),
         ]);
+
+        $this->createIndex(self::INDEX_NAME,
+            RATE_TABLE,
+            self::INDEX_FIELD);
     }
 
     /**
@@ -28,5 +35,6 @@ class m240717_150313_create_rates_table extends Migration
     public function safeDown()
     {
         $this->dropTable('{{%' . RATES_TABLE . '}}');
+        $this->dropIndex(self::INDEX_NAME, RATE_TABLE);
     }
 }
