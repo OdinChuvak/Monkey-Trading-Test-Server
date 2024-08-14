@@ -5,6 +5,7 @@ namespace app\modules\api\controllers;
 use app\models\Pair;
 use app\models\PairCommission;
 use app\models\PairConfiguration;
+use app\modules\api\common\responses\ApiResponse;
 use yii\filters\VerbFilter;
 use yii\rest\Controller;
 
@@ -25,9 +26,9 @@ class ExchangeController extends BaseController
         return $behaviors;
     }
 
-    public function actionGetPairs(): array
+    public function actionGetPairs(): ApiResponse
     {
-        return array_map(function($pair) {
+        return ApiResponse::getSuccessResponse(array_map(function($pair) {
             /**
              * @var Pair $pair
              */
@@ -35,16 +36,16 @@ class ExchangeController extends BaseController
                 'base_currency' => $pair->base_currency,
                 'quoted_currency' => $pair->quoted_currency,
             ];
-        }, Pair::find()->all());
+        }, Pair::find()->all()));
     }
 
-    public function actionGetConfigurations(): array
+    public function actionGetConfigurations(): ApiResponse
     {
         $configurations = PairConfiguration::find()
             ->with('pair')
             ->all();
 
-        return array_map(function($configuration) {
+        return ApiResponse::getSuccessResponse(array_map(function($configuration) {
 
             /**
              * @var PairConfiguration $configuration
@@ -61,10 +62,10 @@ class ExchangeController extends BaseController
                 'quantity_step' => $configuration->quantity_step,
                 'quantity_precision' => $configuration->quantity_precision,
             ];
-        }, $configurations);
+        }, $configurations));
     }
 
-    public function actionGetCommissions(): array
+    public function actionGetCommissions(): ApiResponse
     {
         $symbols = \Yii::$app->request->getQueryParam('symbols');
 
@@ -78,7 +79,7 @@ class ExchangeController extends BaseController
 
         $commissions = $query->all();
 
-        return array_map(function($commission) {
+        return ApiResponse::getSuccessResponse(array_map(function($commission) {
 
             /**
              * @var PairCommission $commission
@@ -89,6 +90,6 @@ class ExchangeController extends BaseController
                 'sell_commission' => $commission->sell_commission,
                 'buy_commission' => $commission->buy_commission,
             ];
-        }, $commissions);
+        }, $commissions));
     }
 }

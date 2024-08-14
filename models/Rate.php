@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use yii\db\ActiveQuery;
+
 /**
  * This is the model class for table "rates".
  *
@@ -11,6 +13,7 @@ namespace app\models;
  * @property float|null $rate
  * @property int|null $created_at
  * @property int|null $updated_at
+ * @property Pair $pair
  */
 class Rate extends BaseModel
 {
@@ -57,5 +60,13 @@ class Rate extends BaseModel
             'created_at',
             'updated_at',
         ];
+    }
+
+    /**
+     * @return ActiveQuery
+     */
+    public function getPair(): ActiveQuery
+    {
+        return $this->hasOne(Pair::class, ['id' => 'pair_id']);
     }
 }

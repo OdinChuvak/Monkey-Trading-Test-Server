@@ -2,9 +2,11 @@
 
 namespace app\modules\api\controllers;
 
-use yii\filters\ContentNegotiator;
+use app\enums\ApiErrorCode;
+use app\models\Moment;
+use app\models\Rate;
+use app\modules\api\common\responses\ApiResponse;
 use yii\filters\VerbFilter;
-use yii\web\Response;
 
 class QuoteBoardController extends BaseController
 {
@@ -21,13 +23,22 @@ class QuoteBoardController extends BaseController
         return $behaviors;
     }
 
-    public function actionIndex(): array
+    public function actionIndex(): ApiResponse
     {
-        return [
-            [
-                'symbol' => '',
-                'price' => '',
-            ]
-        ];
+        $moment = Moment::findOne(['is_current' => true]);
+
+        if (!$moment) {
+            return ApiResponse::getErrorResponse(ApiErrorCode::MISSING_MOMENT);
+        }
+
+        $rates = Rate::findAll(['moment_id' => $moment->id]);
+
+        return ApiResponse::getSuccessResponse(array_map(function (Rate $rate) {
+            return [
+                'base_currency' => $rate->pair->base_currency,
+                'quoted_currency' => $rate->pair->quoted_currency,
+                'price' => $rate->rate,
+            ];
+        }, $rates));
     }
 }
