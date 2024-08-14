@@ -11,8 +11,6 @@ use app\models\Wallet;
 use app\modules\api\common\responses\ApiResponse;
 use Yii;
 use yii\base\DynamicModel;
-use yii\base\InvalidConfigException;
-use yii\db\Exception;
 use yii\filters\VerbFilter;
 
 class OrderController extends BaseController
@@ -31,21 +29,34 @@ class OrderController extends BaseController
         return $behaviors;
     }
 
-    public function actionGetInfo($externalId): array
+    public function actionGetInfo($id): ApiResponse
     {
-        return [
-            'externalId' => '',
-            'status' => '',
-            'rate' => '',
-            'invested' => '',
-            'received' => ''
-        ];
+        /**
+         * @var Order $order
+         */
+        $order = Order::find()
+            ->with('pair')
+            ->where(['id' => $id])
+            ->one();
+
+        if (!$order) {
+            return ApiResponse::getErrorResponse(ApiErrorCode::MISSING_ORDER);
+        }
+
+        return ApiResponse::getSuccessResponse([
+            'id' => $order->id,
+            'status' => Order::STATUS_EXECUTED,
+            'operation' => $order->operation,
+            'rate' => $order->rate,
+            'base_currency' => $order->pair->base_currency,
+            'quoted_currency' => $order->pair->quoted_currency,
+            'commission_currency' => $order->commission_asset,
+            'commission' => $order->commission,
+            'invested' => $order->invested_amount,
+            'received' => $order->received_amount,
+        ]);
     }
 
-    /**
-     * @throws InvalidConfigException
-     * @throws Exception
-     */
     public function actionCreate(): ApiResponse
     {
         $transaction = Yii::$app->db->beginTransaction();
@@ -112,7 +123,7 @@ class OrderController extends BaseController
             $moment = Moment::findOne(['is_current' => true]);
 
             if (!$moment) {
-                return ApiResponse::getErrorResponse(ApiErrorCode::MISSING_REQUIRED_DATA);
+                return ApiResponse::getErrorResponse(ApiErrorCode::MISSING_MOMENT);
             }
 
             $actualRate = Rate::findOne([
@@ -121,17 +132,20 @@ class OrderController extends BaseController
             ]);
 
             if (!$actualRate) {
-                return ApiResponse::getErrorResponse(ApiErrorCode::MISSING_REQUIRED_DATA);
+                return ApiResponse::getErrorResponse(ApiErrorCode::MISSING_RATE);
             }
-
             if ($operation === Order::OPERATION_BUY) {
                 $value = ($amount / $actualRate->rate);
-                $value = $value - ($value * $pair->commission->buy_commission);
+                $commission = $value * $pair->commission->buy_commission;
+                $commissionAsset = $pair->base_currency;
+                $value = $value - $commission;
                 $baseCurrencyBalance->amount += $value;
                 $quotedCurrencyBalance->amount -= $amount;
             } else {
                 $value = ($amount / (1 / $actualRate->rate));
-                $value = $value - ($value * $pair->commission->sell_commission);
+                $commission = $value * $pair->commission->sell_commission;
+                $commissionAsset = $pair->quoted_currency;
+                $value = $value - $commission;
                 $baseCurrencyBalance->amount -= $amount;
                 $quotedCurrencyBalance->amount += $value;
             }
@@ -147,6 +161,10 @@ class OrderController extends BaseController
                 'operation' => $operation,
                 'invested_amount' => $amount,
                 'received_amount' => $value,
+                'rate' => $actualRate->rate,
+                'commission_asset' => $commissionAsset,
+                'commission' => $commission,
+                'status' => Order::STATUS_EXECUTED,
             ]);
 
             $transaction->commit();

@@ -11,11 +11,6 @@ class ApiErrorCode
         'message' => 'Некорректный запрос'
     ];
 
-    const MISSING_REQUIRED_DATA = [
-        'code' => 1001,
-        'message' => 'Отсутствуют обязательные данные'
-    ];
-
     const INSUFFICIENT_FUND = [
         'code' => 2000,
         'message' => 'Недостаточно средств'
@@ -24,5 +19,20 @@ class ApiErrorCode
     const UNAVAILABLE_CURRENCY_PAIR = [
         'code' => 2001,
         'message' => 'Торги в данной валютной паре недоступны'
+    ];
+
+    const MISSING_MOMENT = [
+        'code' => 3000,
+        'message' => 'Момент не существует',
+    ];
+
+    const MISSING_ORDER = [
+        'code' => 4000,
+        'message' => 'Ордера не существует',
+    ];
+
+    const MISSING_RATE = [
+        'code' => 5000,
+        'message' => 'Отсутствует информация по курсу',
     ];
 }

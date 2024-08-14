@@ -2,9 +2,9 @@
 
 namespace app\modules\api\controllers;
 
+use app\enums\ApiErrorCode;
 use app\models\Moment;
 use app\modules\api\common\responses\ApiResponse;
-use enums\ApiErrorCode;
 use Yii;
 
 class MomentController extends BaseController
