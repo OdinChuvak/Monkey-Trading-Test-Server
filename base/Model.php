@@ -1,14 +1,19 @@
 <?php
 
-namespace app\models;
+namespace app\base;
 
+use app\models\Moment;
+use Yii;
+use yii\base\InvalidConfigException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\db\Exception;
-use yii\db\Expression;
 
-abstract class BaseModel extends ActiveRecord
+abstract class Model extends ActiveRecord
 {
+    /**
+     * @throws \Exception
+     */
     public function behaviors(): array
     {
         return [
@@ -16,23 +21,28 @@ abstract class BaseModel extends ActiveRecord
                 'class' => TimestampBehavior::class,
                 'createdAtAttribute' => 'created_at',
                 'updatedAtAttribute' => 'updated_at',
-                'value' => new Expression('UNIX_TIMESTAMP()'),
+                'value' => Moment::getCurrentTimestamp(),
             ],
         ];
     }
 
     /**
+     * @throws InvalidConfigException
+     */
+    public static function getDb()
+    {
+        return Yii::$app->get('db');
+    }
+
+    /**
      * @throws Exception
      */
-    public static function add(array $values, string $formName = ''): ActiveRecord
+    public static function add(array $values, string $formName = ''): Model
     {
         $model = new static();
 
-        $model->load($values, $formName);
-        $model->save();
-
-        if (count($model->errors) === 0) {
-            $model->refresh();
+        if (!$model->load($values, $formName) || !$model->save()) {
+            throw new Exception(reset($model->firstErrors));
         }
 
         return $model;
@@ -40,6 +50,7 @@ abstract class BaseModel extends ActiveRecord
 
     /**
      * @throws Exception
+     * @throws InvalidConfigException
      */
     public static function batchInsert(array $data, array $attributes = null): void
     {

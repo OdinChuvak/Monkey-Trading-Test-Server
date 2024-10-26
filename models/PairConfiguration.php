@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use app\base\Model;
+use app\enums\DBTables;
 use yii\db\ActiveQuery;
 
 /**
@@ -21,14 +23,14 @@ use yii\db\ActiveQuery;
  * @property int|null $updated_at
  * @property Pair $pair
  */
-class PairConfiguration extends BaseModel
+class PairConfiguration extends Model
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName(): string
     {
-        return PAIR_CONFIGURATION_TABLE;
+        return DBTables::PAIR_CONFIGURATION;
     }
 
     /**

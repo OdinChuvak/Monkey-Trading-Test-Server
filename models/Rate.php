@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use app\base\Model;
+use app\enums\DBTables;
 use yii\db\ActiveQuery;
 
 /**
@@ -14,15 +16,16 @@ use yii\db\ActiveQuery;
  * @property int|null $created_at
  * @property int|null $updated_at
  * @property Pair $pair
+ * @property Moment $moment
  */
-class Rate extends BaseModel
+class Rate extends Model
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName(): string
     {
-        return RATE_TABLE;
+        return DBTables::RATE;
     }
 
     /**
@@ -68,5 +71,13 @@ class Rate extends BaseModel
     public function getPair(): ActiveQuery
     {
         return $this->hasOne(Pair::class, ['id' => 'pair_id']);
+    }
+
+    /**
+     * @return ActiveQuery
+     */
+    public function getMoment(): ActiveQuery
+    {
+        return $this->hasOne(Moment::class, ['id' => 'moment_id']);
     }
 }

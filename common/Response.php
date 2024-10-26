@@ -1,8 +1,8 @@
 <?php
 
-namespace app\modules\api\common\responses;
+namespace app\common;
 
-class ApiResponse
+class Response
 {
     const STATUS_OK = 'OK';
 
@@ -24,12 +24,12 @@ class ApiResponse
         $this->data = $data;
     }
 
-    public static function getErrorResponse(array $errorData): ApiResponse
+    public static function getErrorResponse(array $errorData): Response
     {
         return new self(self::STATUS_ERROR, $errorData);
     }
 
-    public static function getSuccessResponse(array $data): ApiResponse
+    public static function getSuccessResponse(array $data): Response
     {
         return new self(self::STATUS_OK, $data);
     }

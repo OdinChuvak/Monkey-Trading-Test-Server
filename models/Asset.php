@@ -3,25 +3,24 @@
 namespace app\models;
 
 use app\base\Model;
-use app\enums\DBTables;
 
 /**
- * This is the model class for table "wallet".
+ * This is the model class for table "asset".
  *
  * @property int $id
- * @property int $account_id
- * @property bool $is_active
+ * @property string $asset
+ * @property int $delisted
  * @property int $created_at
  * @property int $updated_at
  */
-class Wallet extends Model
+class Asset extends Model
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName(): string
     {
-        return DBTables::WALLET;
+        return 'asset';
     }
 
     /**
@@ -30,9 +29,8 @@ class Wallet extends Model
     public function rules(): array
     {
         return [
-            [['account_id', 'is_active', 'created_at', 'updated_at'], 'required'],
-            [['account_id', 'created_at', 'updated_at'], 'integer'],
-            [['is_active'], 'boolean'],
+            [['delisted', 'created_at', 'updated_at'], 'integer'],
+            [['asset'], 'string', 'max' => 8],
         ];
     }
 
@@ -43,8 +41,8 @@ class Wallet extends Model
     {
         return [
             'id' => 'ID',
-            'account_id' => 'ID аккаунта',
-            'is_active' => 'Признак активного кошелька аккаунта',
+            'asset' => 'Актив',
+            'delisted' => 'Произведен делистинг актива',
             'created_at' => 'Создано',
             'updated_at' => 'Изменено',
         ];

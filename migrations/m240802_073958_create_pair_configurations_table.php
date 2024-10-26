@@ -1,6 +1,7 @@
 <?php
 
-use yii\db\Migration;
+use app\enums\DBTables;
+use app\base\Migration;
 
 /**
  * Handles the creation of table `{{%pair_configuration}}`.
@@ -10,9 +11,9 @@ class m240802_073958_create_pair_configurations_table extends Migration
     /**
      * {@inheritdoc}
      */
-    public function safeUp()
+    public function safeUp(): void
     {
-        $this->createTable('{{%' . PAIR_CONFIGURATION_TABLE . '}}', [
+        $this->createTable('{{%' . DBTables::PAIR_CONFIGURATION . '}}', [
             'id' => $this->primaryKey(),
             'pair_id' => $this->integer(),
             'min_price' => $this->float(10),
@@ -31,8 +32,8 @@ class m240802_073958_create_pair_configurations_table extends Migration
     /**
      * {@inheritdoc}
      */
-    public function safeDown()
+    public function safeDown(): void
     {
-        $this->dropTable('{{%' . PAIR_CONFIGURATION_TABLE . '}}');
+        $this->dropTable('{{%' . DBTables::PAIR_CONFIGURATION . '}}');
     }
 }

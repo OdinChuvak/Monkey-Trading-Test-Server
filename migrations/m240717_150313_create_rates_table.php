@@ -1,6 +1,7 @@
 <?php
 
-use yii\db\Migration;
+use app\enums\DBTables;
+use app\base\Migration;
 
 /**
  * Handles the creation of table `{{%rate}}`.
@@ -13,9 +14,9 @@ class m240717_150313_create_rates_table extends Migration
     /**
      * {@inheritdoc}
      */
-    public function safeUp()
+    public function safeUp(): void
     {
-        $this->createTable('{{%' . RATE_TABLE . '}}', [
+        $this->createTable('{{%' . DBTables::RATE . '}}', [
             'id' => $this->primaryKey(),
             'pair_id' => $this->integer(),
             'moment_id' => $this->integer(),
@@ -25,16 +26,16 @@ class m240717_150313_create_rates_table extends Migration
         ]);
 
         $this->createIndex(self::INDEX_NAME,
-            RATE_TABLE,
+            DBTables::RATE,
             self::INDEX_FIELD);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function safeDown()
+    public function safeDown(): void
     {
-        $this->dropTable('{{%' . RATES_TABLE . '}}');
-        $this->dropIndex(self::INDEX_NAME, RATE_TABLE);
+        $this->dropTable('{{%' . DBTables::RATE . '}}');
+        $this->dropIndex(self::INDEX_NAME, DBTables::RATE);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
-use yii\db\Migration;
+use app\enums\DBTables;
+use app\base\Migration;
 
 /**
  * Handles the creation of table `{{%pair_commission}}`.
@@ -10,9 +11,9 @@ class m240802_074416_create_pair_commissions_table extends Migration
     /**
      * {@inheritdoc}
      */
-    public function safeUp()
+    public function safeUp(): void
     {
-        $this->createTable('{{%' . PAIR_COMMISSION_TABLE . '}}', [
+        $this->createTable('{{%' . DBTables::PAIR_COMMISSION . '}}', [
             'id' => $this->primaryKey(),
             'pair_id' => $this->integer(),
             'buy_commission' => $this->float('8'),
@@ -25,8 +26,8 @@ class m240802_074416_create_pair_commissions_table extends Migration
     /**
      * {@inheritdoc}
      */
-    public function safeDown()
+    public function safeDown(): void
     {
-        $this->dropTable('{{%' . PAIR_COMMISSION_TABLE . '}}');
+        $this->dropTable('{{%' . DBTables::PAIR_COMMISSION . '}}');
     }
 }

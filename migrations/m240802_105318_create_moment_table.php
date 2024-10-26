@@ -1,6 +1,7 @@
 <?php
 
-use yii\db\Migration;
+use app\enums\DBTables;
+use app\base\Migration;
 
 /**
  * Handles the creation of table `{{%moment}}`.
@@ -10,22 +11,19 @@ class m240802_105318_create_moment_table extends Migration
     /**
      * {@inheritdoc}
      */
-    public function safeUp()
+    public function safeUp(): void
     {
-        $this->createTable('{{%' . MOMENT_TABLE . '}}', [
+        $this->createTable('{{%' . DBTables::MOMENT . '}}', [
             'id' => $this->primaryKey(),
             'timestamp' => $this->integer(),
-            'is_current' => $this->boolean(),
-            'created_at' => $this->integer(),
-            'updated_at' => $this->integer(),
         ]);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function safeDown()
+    public function safeDown(): void
     {
-        $this->dropTable('{{%' . MOMENT_TABLE . '}}');
+        $this->dropTable('{{%' . DBTables::MOMENT . '}}');
     }
 }

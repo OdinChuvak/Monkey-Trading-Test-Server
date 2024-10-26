@@ -2,23 +2,43 @@
 
 namespace app\models;
 
+use app\base\Model;
+use app\enums\DBTables;
+use app\common\DomainException;
+use app\enums\DomainErrors;
+use yii\behaviors\TimestampBehavior;
+
 /**
  * This is the model class for table "moment".
  *
  * @property int $id
  * @property int|null $timestamp
- * @property int|null $is_current
- * @property int|null $created_at
- * @property int|null $updated_at
  */
-class Moment extends BaseModel
+class Moment extends Model
 {
+    const CURRENT_TIMESTAMP_CACHE_FILE = __DIR__ . '/moment.timestamp';
+
+    /**
+     * @throws \Exception
+     */
+    public function behaviors(): array
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'createdAtAttribute' => 'created_at',
+                'updatedAtAttribute' => 'updated_at',
+                'value' => time(),
+            ],
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */
     public static function tableName(): string
     {
-        return MOMENT_TABLE;
+        return DBTables::MOMENT;
     }
 
     /**
@@ -27,7 +47,7 @@ class Moment extends BaseModel
     public function rules(): array
     {
         return [
-            [['timestamp', 'is_current', 'created_at', 'updated_at'], 'integer'],
+            [['timestamp'], 'integer'],
             [['timestamp'], 'unique'],
         ];
     }
@@ -40,9 +60,6 @@ class Moment extends BaseModel
         return [
             'id' => 'ID',
             'timestamp' => 'Временная метка момента времени',
-            'is_current' => 'Признак текущей метки',
-            'created_at' => 'Создано',
-            'updated_at' => 'Изменено',
         ];
     }
 
@@ -50,9 +67,28 @@ class Moment extends BaseModel
     {
         return [
             'timestamp',
-            'is_current',
-            'created_at',
-            'updated_at',
         ];
+    }
+
+    /**
+     * @return int
+     * @throws DomainException
+     */
+    public static function getCurrentTimestamp(): int
+    {
+        $cacheFile = self::CURRENT_TIMESTAMP_CACHE_FILE;
+
+        if (!file_exists($cacheFile)) {
+            throw new DomainException(DomainErrors::MOMENT_NOT_SPECIFIED);
+        }
+
+        $timestamp = file_get_contents($cacheFile);
+        $timestamp = trim($timestamp);
+
+        if (strlen($timestamp) !== 10 || !is_numeric($timestamp)) {
+            throw new DomainException(DomainErrors::INCORRECT_TIMESTAMP);
+        }
+
+        return (int) $timestamp;
     }
 }

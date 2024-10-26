@@ -4,19 +4,18 @@ use app\enums\DBTables;
 use app\base\Migration;
 
 /**
- * Handles the creation of table `{{%wallet}}`.
+ * Handles the creation of table `{{%account}}`.
  */
-class m240803_234303_create_wallet_table extends Migration
+class m241019_141714_create_account_table extends Migration
 {
     /**
      * {@inheritdoc}
      */
     public function safeUp(): void
     {
-        $this->createTable('{{%' . DBTables::WALLET . '}}', [
+        $this->createTable('{{%' . DBTables::ACCOUNT . '}}', [
             'id' => $this->primaryKey(),
-            'account_id' => $this->integer(),
-            'is_active' => $this->boolean(),
+            'access_token' => $this->string(128),
             'created_at' => $this->integer(),
             'updated_at' => $this->integer(),
         ]);
@@ -27,6 +26,6 @@ class m240803_234303_create_wallet_table extends Migration
      */
     public function safeDown(): void
     {
-        $this->dropTable('{{%' . DBTables::WALLET . '}}');
+        $this->dropTable('{{%' . DBTables::ACCOUNT . '}}');
     }
 }
