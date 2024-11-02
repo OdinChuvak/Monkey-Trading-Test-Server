@@ -37,7 +37,7 @@ class Transaction extends Model
     public function rules(): array
     {
         return [
-            [['wallet_id', 'asset', 'amount', 'operation', 'balance', 'created_at', 'updated_at'], 'required'],
+            [['wallet_id', 'asset_id', 'amount', 'operation', 'balance', 'created_at', 'updated_at'], 'required'],
             [['wallet_id', 'asset_id', 'created_at', 'updated_at'], 'integer'],
             [['amount', 'balance'], 'number'],
             [['operation'], 'string'],

@@ -46,7 +46,7 @@ class Order extends Model
     public function rules(): array
     {
         return [
-            [['pair_id', 'commission_asset_id', 'created_at', 'updated_at'], 'integer'],
+            [['account_id', 'pair_id', 'commission_asset_id', 'created_at', 'updated_at'], 'integer'],
             [['operation', 'status'], 'string'],
             [['rate', 'commission_amount', 'invested_amount', 'received_amount'], 'number'],
         ];
@@ -59,7 +59,8 @@ class Order extends Model
     {
         return [
             'id' => 'ID',
-            'pair_id' => 'ID криптовалютной пары',
+            'account_id' => 'ID Аккаунта',
+            'pair_id' => 'ID Криптовалютной пары',
             'operation' => 'Операция',
             'invested_amount' => 'Инвестированная сумма',
             'received_amount' => 'Полученная сумма',

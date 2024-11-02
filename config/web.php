@@ -12,6 +12,33 @@ $config = [
         '@npm'   => '@vendor/npm-asset',
     ],
     'components' => [
+        'response' => [
+            'class' => \yii\web\Response::class,
+            'format' => \yii\web\Response::FORMAT_JSON,
+            'on beforeSend' => function ($event) {
+                $response = $event->sender;
+                $data = is_array($response->data) ? $response->data : [$response->data];
+                $exception = Yii::$app->errorHandler->exception;
+
+                if ($response->isSuccessful) {
+                    $response->data = \app\common\Response::getSuccessResponse($data);
+                } elseif (!is_null($exception)) {
+                    if ($exception instanceof \app\common\DomainException) {
+                        $response->data = \app\common\Response::getErrorResponse($exception->getDomainError());
+                    } else {
+                        $response->data = \app\common\Response::getErrorResponse([
+                            'code' => \app\enums\DomainErrors::CUSTOM_ERROR_CODE,
+                            'message' => $exception->getMessage(),
+                        ]);
+                    }
+                } else {
+                    \app\common\Response::getErrorResponse([
+                        'code' => \app\enums\DomainErrors::CUSTOM_ERROR_CODE,
+                        'message' => 'Unknown error',
+                    ]);
+                }
+            },
+        ],
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'vm8fvHB2cdcQfgPAXRtnoC07MiocUs',
@@ -23,11 +50,8 @@ $config = [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
+            'identityClass' => \app\models\Account::class,
             'enableAutoLogin' => true,
-        ],
-        'errorHandler' => [
-            'errorAction' => 'site/error',
         ],
         'mailer' => [
             'class' => \yii\symfonymailer\Mailer::class,

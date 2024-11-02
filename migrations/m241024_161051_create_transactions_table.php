@@ -17,9 +17,9 @@ class m241024_161051_create_transactions_table extends Migration
             'id' => $this->primaryKey(),
             'wallet_id' => $this->integer(),
             'asset_id' => $this->integer(),
-            'amount' => $this->float(),
+            'amount' => $this->double(),
             'operation' => "ENUM('debit', 'credit')",
-            'balance' => $this->float(),
+            'balance' => $this->double(),
             'created_at' => $this->integer(),
             'updated_at' => $this->integer(),
         ]);

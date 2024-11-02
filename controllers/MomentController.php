@@ -7,22 +7,31 @@ use app\common\DomainException;
 use app\common\Response;
 use app\enums\DomainErrors;
 use app\models\Moment;
+use yii\filters\VerbFilter;
 
 class MomentController extends Controller
 {
     /**
      * @return array
      */
-    protected function safeActions(): array
+    public function behaviors(): array
     {
-        return [];
+        $behaviors = parent::behaviors();
+        $behaviors['verbs'] = [
+            'class' => VerbFilter::class,
+            'actions' => [
+                'set-next-moment' => ['GET'],
+            ],
+        ];
+
+        return $behaviors;
     }
 
     /**
-     * @return string
+     * @return int
      * @throws DomainException
      */
-    public function setNextMomentAction(): string
+    public function actionSetNextMoment(): int
     {
         $cacheFile = Moment::CURRENT_TIMESTAMP_CACHE_FILE;
         $currentTimestamp = file_exists($cacheFile) ? Moment::getCurrentTimestamp() : null;
@@ -49,6 +58,6 @@ class MomentController extends Controller
 
         file_put_contents($cacheFile, $nextMoment->timestamp);
 
-        return Response::STATUS_OK;
+        return $nextMoment->timestamp;
     }
 }

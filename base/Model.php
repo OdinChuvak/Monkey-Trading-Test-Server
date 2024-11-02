@@ -5,12 +5,22 @@ namespace app\base;
 use app\models\Moment;
 use Yii;
 use yii\base\InvalidConfigException;
+use yii\base\Model as ModelAlias;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
+use yii\db\BaseActiveRecord;
 use yii\db\Exception;
 
 abstract class Model extends ActiveRecord
 {
+    /**
+     * @throws InvalidConfigException
+     */
+    public static function getDb()
+    {
+        return Yii::$app->get('db');
+    }
+
     /**
      * @throws \Exception
      */
@@ -19,19 +29,16 @@ abstract class Model extends ActiveRecord
         return [
             [
                 'class' => TimestampBehavior::class,
-                'createdAtAttribute' => 'created_at',
-                'updatedAtAttribute' => 'updated_at',
-                'value' => Moment::getCurrentTimestamp(),
+                'attributes' => [
+                    ModelAlias::EVENT_BEFORE_VALIDATE => ['created_at', 'updated_at'],
+                    BaseActiveRecord::EVENT_BEFORE_INSERT => ['created_at', 'updated_at'],
+                    BaseActiveRecord::EVENT_BEFORE_UPDATE => ['updated_at'],
+                ],
+                'value' => function() {
+                    return Moment::getCurrentTimestamp();
+                },
             ],
         ];
-    }
-
-    /**
-     * @throws InvalidConfigException
-     */
-    public static function getDb()
-    {
-        return Yii::$app->get('db');
     }
 
     /**
@@ -42,7 +49,8 @@ abstract class Model extends ActiveRecord
         $model = new static();
 
         if (!$model->load($values, $formName) || !$model->save()) {
-            throw new Exception(reset($model->firstErrors));
+            $attribute = array_key_first($model->getFirstErrors());
+            throw new Exception($model->getFirstError($attribute));
         }
 
         return $model;

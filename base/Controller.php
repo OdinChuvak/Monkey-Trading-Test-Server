@@ -2,33 +2,38 @@
 
 namespace app\base;
 
-use app\common\Response;
+use yii\base\InlineAction;
+use yii\db\Exception;
 use app\common\DomainException;
 use app\enums\DomainErrors;
-use app\services\Moment\exceptions\MomentGettingException;
-use app\services\Moment\exceptions\MomentSettingException;
 use Yii;
 use yii\filters\auth\HttpBearerAuth;
+use yii\web\BadRequestHttpException;
 use yii\web\Controller as WebController;
 
 abstract class Controller extends WebController
 {
     public function behaviors(): array
     {
-        return [
-            'authenticator' => [
-                'class' => HttpBearerAuth::class,
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['authenticator'] = [
+            'class' => HttpBearerAuth::class,
         ];
+        return $behaviors;
     }
 
     /**
      * @param $action
      * @return bool
      * @throws DomainException
+     * @throws BadRequestHttpException
+     * @throws Exception
      */
     public function beforeAction($action): bool
     {
+        $this->enableCsrfValidation = false;
+        parent::beforeAction($action);
+
         if ($action->id === 'error') {
             return true;
         }
@@ -37,15 +42,13 @@ abstract class Controller extends WebController
             ? Yii::$app->db->beginTransaction() : null;
 
         try {
-            if (!Yii::$app->user->wallet) {
+            if (!Yii::$app->user->identity->wallet) {
                 throw new DomainException(DomainErrors::WALLET_MISSING);
             }
 
-            /**
-             * TODO убедиться, что параметры уже инициализированы в экшне
-             * Если нет, реализовать передачу параметров в экшен
-             */
-            call_user_func([$action, 'run']);
+            if ($action instanceof InlineAction) {
+                Yii::$app->response->data = call_user_func([$action->controller, $action->actionMethod]);
+            }
 
             if ($transaction) {
                 $transaction->commit();
@@ -55,52 +58,16 @@ abstract class Controller extends WebController
                 $transaction->rollBack();
             }
 
-            /**
-             * @var int $code
-             * @var string $message
-             */
-            extract($this->getExceptionError($exception));
-            call_user_func([$this, 'errorAction'], $code, $message);
+             throw $exception;
         }
 
         return false;
     }
 
-    /**
-     * @param $action
-     * @param $result
-     * @return Response
-     */
-    public function afterAction($action, $result): Response
+    protected function safeActions(): array
     {
-        return Response::getSuccessResponse(parent::afterAction($action, $result));
+        return [];
     }
-
-    private function errorAction(int $code, string $message): Response
-    {
-        return Response::getErrorResponse([
-            'code' => $code,
-            'message' => $message,
-        ]);
-    }
-
-    /**
-     * @param \Exception $exception
-     * @return array
-     */
-    private function getExceptionError(\Exception $exception): array
-    {
-        if (get_class($exception) === DomainException::class) {
-            return $exception->getDomainError();
-        }
-
-        return [
-            'code' => DomainErrors::CUSTOM_ERROR_CODE,
-            'message' => $exception->getMessage(),
-        ];
-    }
-
-    abstract protected function safeActions(): array;
 
     private function isSafeAction(string $action): bool
     {

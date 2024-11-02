@@ -49,4 +49,9 @@ class DomainErrors
         'code' => 3000,
         'message' => 'Order not found',
     ];
+
+    const WRONG_ORDER_AMOUNT_STEP = [
+        'code' => 3001,
+        'message' => 'Wrong order amount step',
+    ];
 }

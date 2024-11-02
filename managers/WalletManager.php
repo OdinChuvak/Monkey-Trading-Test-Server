@@ -13,6 +13,8 @@ class WalletManager
 {
     const TRANSACTION_BLOCK_SIZE = 11;
 
+    const COMPARISON_ACCURACY = 12;
+
     private Wallet $wallet;
 
     public function __construct(Wallet $wallet)
@@ -32,7 +34,7 @@ class WalletManager
                 'wallet_id' => $this->wallet->id,
                 'asset_id' => $asset->id,
             ])
-            ->orderBy(['created_at' => SORT_DESC])
+            ->orderBy(['created_at' => SORT_DESC, 'id' => SORT_DESC])
             ->limit(self::TRANSACTION_BLOCK_SIZE)
             ->all();
 
@@ -47,23 +49,25 @@ class WalletManager
              * @var Transaction $item
              */
             return $item->operation === Transaction::OPERATION_DEBIT
-                ? $carry + $item->amount : $carry - $item->amount;
+                ? (float) bcadd($carry, $item->amount, self::COMPARISON_ACCURACY)
+                : (float) bcsub($carry, $item->amount, self::COMPARISON_ACCURACY);
         });
 
         /**
          * @var Transaction $lastBlockTransaction
          */
-        $lastBlockTransaction = array_shift($transactions);
+        $lastBlockTransaction = count($transactions) > 0
+            ? array_shift($transactions) : null;
 
         $calculatedBalance = $firstBlockTransaction
-            ? $firstBlockTransaction->balance + $blockBalance
+            ? (float) bcadd($firstBlockTransaction->balance, $blockBalance, self::COMPARISON_ACCURACY)
             : $blockBalance;
 
-        if ($calculatedBalance !== $lastBlockTransaction->balance) {
+        if ($lastBlockTransaction && bccomp($calculatedBalance, $lastBlockTransaction->balance, self::COMPARISON_ACCURACY) !== 0) {
             throw new DomainException(DomainErrors::INCORRECT_BALANCE);
         }
 
-        return $calculatedBalance;
+        return $calculatedBalance ?: 0;
     }
 
     /**
@@ -80,36 +84,21 @@ class WalletManager
     /**
      * @param Asset $asset
      * @param float $amount
+     * @param string $operation
      * @return void
      * @throws DomainException
      * @throws Exception
      */
-    public function debit(Asset $asset, float $amount): void
+    public function add(Asset $asset, float $amount, string $operation)
     {
         Transaction::add([
             'wallet_id' => $this->wallet->id,
             'asset_id' => $asset->id,
             'amount' => $amount,
-            'operation' => Transaction::OPERATION_DEBIT,
-            'balance' => $this->getBalance($asset) + $amount,
-        ]);
-    }
-
-    /**
-     * @param Asset $asset
-     * @param float $amount
-     * @return void
-     * @throws DomainException
-     * @throws Exception
-     */
-    public function credit(Asset $asset, float $amount): void
-    {
-        Transaction::add([
-            'wallet_id' => $this->wallet->id,
-            'asset_id' => $asset->id,
-            'amount' => $amount,
-            'operation' => Transaction::OPERATION_DEBIT,
-            'balance' => $this->getBalance($asset) - $amount,
+            'operation' => $operation,
+            'balance' => $operation === Transaction::OPERATION_DEBIT
+                ? (float) bcadd($this->getBalance($asset), $amount, self::COMPARISON_ACCURACY)
+                : (float) bcsub($this->getBalance($asset), $amount, self::COMPARISON_ACCURACY),
         ]);
     }
 }

@@ -6,7 +6,6 @@ use app\base\Model;
 use app\enums\DBTables;
 use app\common\DomainException;
 use app\enums\DomainErrors;
-use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "moment".
@@ -16,22 +15,17 @@ use yii\behaviors\TimestampBehavior;
  */
 class Moment extends Model
 {
-    const CURRENT_TIMESTAMP_CACHE_FILE = __DIR__ . '/moment.timestamp';
+    /**
+     * @var int
+     */
+    private static ?int $currentTime = null;
 
     /**
-     * @throws \Exception
+     * @var Moment
      */
-    public function behaviors(): array
-    {
-        return [
-            [
-                'class' => TimestampBehavior::class,
-                'createdAtAttribute' => 'created_at',
-                'updatedAtAttribute' => 'updated_at',
-                'value' => time(),
-            ],
-        ];
-    }
+    private static ?self $currentMoment = null;
+
+    const CURRENT_TIMESTAMP_CACHE_FILE = __DIR__ . '/../runtime/app/moment.timestamp';
 
     /**
      * {@inheritdoc}
@@ -76,6 +70,10 @@ class Moment extends Model
      */
     public static function getCurrentTimestamp(): int
     {
+        if (self::$currentTime) {
+            return self::$currentTime;
+        }
+
         $cacheFile = self::CURRENT_TIMESTAMP_CACHE_FILE;
 
         if (!file_exists($cacheFile)) {
@@ -89,6 +87,26 @@ class Moment extends Model
             throw new DomainException(DomainErrors::INCORRECT_TIMESTAMP);
         }
 
+        self::$currentTime = (int) $timestamp;
+
         return (int) $timestamp;
+    }
+
+    /**
+     * @throws DomainException
+     */
+    public static function getCurrentMoment(): Moment
+    {
+        if (self::$currentMoment) {
+            return self::$currentMoment;
+        }
+
+        self::$currentMoment = Moment::findOne(['timestamp' => self::getCurrentTimestamp()]);
+
+        if (!self::$currentMoment) {
+            throw new DomainException(DomainErrors::MOMENT_MISSING);
+        }
+
+        return self::$currentMoment;
     }
 }

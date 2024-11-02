@@ -4,21 +4,40 @@ namespace app\controllers;
 
 use app\base\Controller;
 use app\common\DomainException;
-use app\common\Response;
 use app\enums\DomainErrors;
 use app\managers\WalletManager;
 use app\models\Pair;
 use app\models\Order;
+use app\models\Transaction;
 use Yii;
 use app\common\DynamicModel;
 use yii\base\InvalidConfigException;
+use yii\db\Exception;
+use yii\filters\VerbFilter;
 
 class OrderController extends Controller
 {
+    /**
+     * @return array
+     */
+    public function behaviors(): array
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs'] = [
+            'class' => VerbFilter::class,
+            'actions' => [
+                'get-info' => ['GET'],
+                'create' => ['POST'],
+            ],
+        ];
+
+        return $behaviors;
+    }
+
     protected function safeActions(): array
     {
         return [
-            'add',
+            'create',
         ];
     }
 
@@ -28,12 +47,12 @@ class OrderController extends Controller
      * @throws DomainException
      * @throws InvalidConfigException
      */
-    public function getInfoAction(int $orderId): array
+    public function actionGetInfo(): array
     {
         /**
          * @var int $orderId
          */
-        extract(Yii::$app->request->getBodyParams());
+        extract(Yii::$app->request->getQueryParams());
 
         $order = Order::findOne($orderId);
 
@@ -56,11 +75,13 @@ class OrderController extends Controller
     }
 
     /**
+     * @return array
+     * @throws DomainException
+     * @throws Exception
      * @throws InvalidConfigException
      * @throws \Exception
-     * @return int
      */
-    public function addAction(): int
+    public function actionCreate(): array
     {
         /**
          * @var string $symbol
@@ -93,25 +114,38 @@ class OrderController extends Controller
             [['operation'], 'in', 'range' => [Order::OPERATION_BUY, Order::OPERATION_SELL]]
         ]);
 
-        if (!$requestModel->validate() && $dynamicModel->hasErrors()) {
-            throw new \Exception($dynamicModel->getFirstErrors()[0]);
+        if (!$requestModel->validate() && $requestModel->hasErrors()) {
+            $attribute = array_key_first($requestModel->getFirstErrors());
+            throw new \Exception($requestModel->getFirstError($attribute));
         }
 
-        $walletManager = new WalletManager(\Yii::$app->user->wallet);
+        $walletManager = new WalletManager(\Yii::$app->user->identity->wallet);
 
-        if ($operation === Order::OPERATION_BUY) {
-            $amount = round($amount, $pair->configuration->price_precision);
-            $targetAsset = $pair->baseAsset;
-            $originalAsset = $pair->quotedAsset;
-            $value = round($amount / $pair->actualRate->rate, $pair->configuration->quantity_precision);
-            $commission = round($value * $pair->commission->buy_commission, $pair->configuration->quantity_precision);
-        } else {
-            $amount = round($amount, $pair->configuration->quantity_precision);
-            $targetAsset = $pair->quotedAsset;
-            $originalAsset = $pair->baseAsset;
-            $value = round($amount / (1 / $pair->actualRate->rate), $pair->configuration->price_precision);
-            $commission = round($value * $pair->commission->sell_commission, $pair->configuration->price_precision);
+        switch ($operation) {
+            case Order::OPERATION_BUY:
+                $step = $pair->configuration->price_step;
+                $targetAsset = $pair->baseAsset;
+                $originalAsset = $pair->quotedAsset;
+                $targetValuePrecision = $pair->configuration->quantity_precision;
+                $actualRate = $pair->actualRate->rate;
+                $commissionRatio = $pair->commission->buy_commission;
+                break;
+            case Order::OPERATION_SELL:
+                $step = $pair->configuration->quantity_step;
+                $targetAsset = $pair->quotedAsset;
+                $originalAsset = $pair->baseAsset;
+                $targetValuePrecision = $pair->configuration->price_precision;
+                $actualRate = 1 / $pair->actualRate->rate;
+                $commissionRatio = $pair->commission->sell_commission;
+                break;
         }
+
+        if (($amount / $step) != intval($amount / $step)) {
+            throw new DomainException(DomainErrors::WRONG_ORDER_AMOUNT_STEP);
+        }
+
+        $value = round($amount / $actualRate, $targetValuePrecision);
+        $commission = round($value * $commissionRatio, $targetValuePrecision);
 
         if (!$walletManager->checkBalance($originalAsset, $amount)) {
             throw new DomainException(DomainErrors::INSUFFICIENT_FUND);
@@ -121,6 +155,7 @@ class OrderController extends Controller
          * @var Order $order
          */
         $order = Order::add([
+            'account_id' => Yii::$app->user->identity->getId(),
             'pair_id' => $pair->id,
             'operation' => $operation,
             'invested_amount' => $amount,
@@ -131,9 +166,16 @@ class OrderController extends Controller
             'status' => Order::STATUS_EXECUTED,
         ]);
 
-        $walletManager->credit($originalAsset, $amount);
-        $walletManager->debit($targetAsset, $value - $commission);
+        $walletManager->add($originalAsset, $amount, Transaction::OPERATION_CREDIT);
+        $walletManager->add($targetAsset, $value - $commission, Transaction::OPERATION_DEBIT);
 
-        return $order->id;
+        return [
+            'orderId' => $order->id,
+            'invested' => $amount,
+            'received' => $value - $commission,
+            'commission_asset' => $targetAsset->asset,
+            'commission_amount' => $commission,
+            'status' => Order::STATUS_PLACED,
+        ];
     }
 }

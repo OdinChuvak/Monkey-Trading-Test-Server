@@ -2,16 +2,36 @@
 
 namespace app\controllers;
 
+use app\base\Controller;
 use app\models\Pair;
 use yii\base\InvalidConfigException;
+use yii\filters\VerbFilter;
 
-class PairController
+class PairController extends Controller
 {
+    /**
+     * @return array
+     */
+    public function behaviors(): array
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs'] = [
+            'class' => VerbFilter::class,
+            'actions' => [
+                'get-all' => ['GET'],
+                'get-configurations' => ['GET'],
+                'get-commissions' => ['GET'],
+            ],
+        ];
+
+        return $behaviors;
+    }
+
     /**
      * @return array
      * @throws InvalidConfigException
      */
-    public function getAllAction(): array
+    public function actionGetAll(): array
     {
         return Pair::find()
             ->onlyAvailableAssets('ba', 'qa')
@@ -24,7 +44,7 @@ class PairController
      * @return array
      * @throws InvalidConfigException
      */
-    public function getConfigurationsAction(): array
+    public function actionGetConfigurations(): array
     {
         $columns = [
             'CONCAT(ba.asset, qa.asset) as symbol',
@@ -43,7 +63,7 @@ class PairController
         return Pair::find()
             ->onlyAvailableAssets('ba', 'qa')
             ->select($columns)
-            ->joinWith('configuration')
+            ->joinWith('configuration', false)
             ->asArray()
             ->all();
     }
@@ -52,12 +72,12 @@ class PairController
      * @return array
      * @throws InvalidConfigException
      */
-    public function getCommissionsAction(): array
+    public function actionGetCommissions(): array
     {
         return Pair::find()
             ->onlyAvailableAssets('ba', 'qa')
             ->select(['CONCAT(ba.asset, qa.asset) as symbol', 'ba.asset as base_asset', 'qa.asset as quoted_asset', 'buy_commission', 'sell_commission'])
-            ->joinWith('commission')
+            ->joinWith('commission', false)
             ->asArray()
             ->all();
     }

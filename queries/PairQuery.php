@@ -20,11 +20,12 @@ class PairQuery extends ActiveQuery
     {
         return $this->joinWith([
                 'baseAsset' . ($baseAssetAlias ? ' as ' . $baseAssetAlias : ''),
-                'quotedAsset as qa' . ($quotedAssetAlias ? ' as ' . $quotedAssetAlias : '')
-            ])->andWhere([
+                'quotedAsset' . ($quotedAssetAlias ? ' as ' . $quotedAssetAlias : '')
+            ], false)
+            ->andWhere([
                 'AND',
-                ['is not', ($baseAssetAlias ?: 'baseAsset') . '.delisted', 1],
-                ['is not', ($quotedAssetAlias ?: 'quotedAsset') . '.delisted', 1],
+                [($baseAssetAlias ?: 'baseAsset') . '.delisted' => [0, null]],
+                [($quotedAssetAlias ?: 'quotedAsset') . '.delisted' => [0, null]],
             ]);
     }
 }

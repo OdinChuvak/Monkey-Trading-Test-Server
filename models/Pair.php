@@ -6,7 +6,6 @@ use app\base\Model;
 use app\common\DomainException;
 use app\enums\DBTables;
 use app\queries\PairQuery;
-use app\services\Moment\MomentService;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\db\ActiveQuery;
@@ -84,8 +83,7 @@ class Pair extends Model
     public function getActualRate(): ActiveQuery
     {
         return $this->hasOne(Rate::class, ['pair_id' => 'id'])
-            ->joinWith('moment')
-            ->onCondition(['timestamp' => Moment::getCurrentTimestamp()]);
+            ->where(['moment_id' => (Moment::getCurrentMoment())->id]);
     }
 
     /**

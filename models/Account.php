@@ -14,6 +14,7 @@ use yii\web\IdentityInterface;
  * @property string|null access_token
  * @property int|null $created_at
  * @property int|null $updated_at
+ * @property Wallet $wallet
  */
 class Account extends Model implements IdentityInterface
 {
