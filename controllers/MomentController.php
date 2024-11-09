@@ -4,7 +4,6 @@ namespace app\controllers;
 
 use app\base\Controller;
 use app\common\DomainException;
-use app\common\Response;
 use app\enums\DomainErrors;
 use app\models\Moment;
 use yii\filters\VerbFilter;

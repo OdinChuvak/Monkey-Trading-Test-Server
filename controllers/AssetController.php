@@ -17,21 +17,18 @@ class AssetController extends Controller
         $behaviors['verbs'] = [
             'class' => VerbFilter::class,
             'actions' => [
-                'get-delisted-assets' => ['GET'],
+                'get-all' => ['GET'],
             ],
         ];
 
         return $behaviors;
     }
 
-    /**
-     * @return array
-     */
-    public function actionGetDelistedAssets(): array
+    public function getAll(): array
     {
         return Asset::find()
-            ->select('asset')
-            ->where(['delisted' => 1])
-            ->column();
+            ->select('asset', 'IF (delisted, FALSE, TRUE) as available')
+            ->asArray()
+            ->all();
     }
 }
