@@ -24,10 +24,10 @@ class AssetController extends Controller
         return $behaviors;
     }
 
-    public function getAll(): array
+    public function actionGetAll(): array
     {
         return Asset::find()
-            ->select('asset', 'IF (delisted, FALSE, TRUE) as available')
+            ->select(['asset', 'IF (delisted, FALSE, TRUE) as available'])
             ->asArray()
             ->all();
     }

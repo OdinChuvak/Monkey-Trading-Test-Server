@@ -16,9 +16,13 @@ abstract class Controller extends WebController
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
-        $behaviors['authenticator'] = [
-            'class' => HttpBearerAuth::class,
-        ];
+
+        if (in_array(Yii::$app->controller->action->id, static::privateActions())) {
+            $behaviors['authenticator'] = [
+                'class' => HttpBearerAuth::class,
+            ];
+        }
+
         return $behaviors;
     }
 
@@ -42,7 +46,7 @@ abstract class Controller extends WebController
             ? Yii::$app->db->beginTransaction() : null;
 
         try {
-            if (!Yii::$app->user->identity->wallet) {
+            if (Yii::$app->user->identity && !Yii::$app->user->identity->wallet) {
                 throw new DomainException(DomainErrors::WALLET_MISSING);
             }
 
@@ -65,6 +69,11 @@ abstract class Controller extends WebController
     }
 
     protected function safeActions(): array
+    {
+        return [];
+    }
+
+    protected function privateActions(): array
     {
         return [];
     }

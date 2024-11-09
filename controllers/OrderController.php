@@ -17,6 +17,14 @@ use yii\filters\VerbFilter;
 
 class OrderController extends Controller
 {
+    protected function privateActions(): array
+    {
+        return [
+            'get-info',
+            'create',
+        ];
+    }
+
     /**
      * @return array
      */
